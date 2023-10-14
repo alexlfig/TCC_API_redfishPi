@@ -16,10 +16,10 @@ import os
 
 app = Flask(__name__)
 
-@app.route('/')#decorator
+@app.route('/')  #decorator
 def index():
     return'Bem Vindo a RedfishPi'
-    #return '@odata.context": "/redfish/v1/$metadata#ServiceRoot",'
+    #return '@odata.context": "/redfish/v1/metadataServiceRoot",'
 
 @app.route('/redfish/v1/', methods=['GET'])
 def get_v1():  

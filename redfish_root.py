@@ -1,8 +1,11 @@
+from subprocess import check_output, Popen, PIPE
 import psutil
 import json
 import os
 
-UUID = 3
+lsblk = Popen(['lsblk', '-f', '--raw'], stdout=PIPE)
+disk_info = check_output(["grep", "ext4"], stdin=lsblk.stdout).decode("utf-8") #raspberry alterar "rootfs"
+UUID = disk_info.split()[3] #raspberry alterar [4]
 
 def get_redfish_v1():
     redfish_v1 = {
