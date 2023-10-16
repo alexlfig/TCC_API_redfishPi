@@ -1,10 +1,17 @@
+from subprocess import check_output, Popen, PIPE
 import psutil
 import json
 import os
 
+lsblk = Popen(['lsblk', '-f', '--raw'], stdout=PIPE)
+disk_info = check_output(["grep", "rootfs"], stdin=lsblk.stdout).decode("utf-8")
+UUID = disk_info.split()[4]
+
 CHASSIS_ID = 0
 SYSTEM_ID = 1
 MANAGER_ID = 2
+MAC_ADDRESS_1 = "123456789A"
+MAC_ADDRESS_2 = "23456789AB"
 
 # SYSTEMS ROOT
 
@@ -22,6 +29,7 @@ def get_systems():
         "@odata.id": "/redfish/v1/Systems",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
+    return systems
 
 # SYSTEMS ID
 
@@ -38,7 +46,7 @@ def get_systems_id():
         "SerialNumber": "437XR1138R2",
         "PartNumber": "224071-J23",
         "Description": "Web Front End node",
-        "UUID": "38947555-7742-3448-3784-823347823834",
+        "UUID": str(UUID),
         "HostName": "web483",
         "Status": {
             "State": "Enabled",
@@ -165,83 +173,352 @@ def get_systems_id():
 # SYSTEMS ID BIOS
 
 def get_systems_id_bios():
-    pass
+    system_bios = {
+        "@odata.type": "#Bios.v1_0_0.Bios",
+        "Id": "BIOS",
+        "Name": "BIOS Configuration Current Settings",
+        "AttributeRegistry": "BiosAttributeRegistryP89.v1_0_0",
+        "Attributes": {
+            "AdminPhone": "",
+            "BootMode": "Uefi",
+            "EmbeddedSata": "Raid",
+            "NicBoot1": "NetworkBoot",
+            "NicBoot2": "Disabled",
+            "PowerProfile": "MaxPerf",
+            "ProcCoreDisable": 0,
+            "ProcHyperthreading": "Enabled",
+            "ProcTurboMode": "Enabled",
+            "UsbControl": "UsbEnabled"
+        },
+        "@Redfish.Settings": {
+            "@odata.type": "#Settings.v1_0_0.Settings",
+            "ETag": "9234ac83b9700123cc32",
+            "Messages": [
+                {
+                    "MessageId": "Base.1.0.SettingsFailed",
+                    "RelatedProperties": [
+                        "#/Attributes/ProcTurboMode"
+                    ]
+                }
+            ],
+            "SettingsObject": {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Settings"
+            },
+            "Time": "2016-03-07T14:44.30-05:00"
+        },
+        "Actions": {
+            "#Bios.ResetBios": {
+                "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Actions/Bios.ResetBios"
+            },
+            "#Bios.ChangePassword": {
+                "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Actions/Bios.ChangePassword"
+            }
+        },
+        "@odata.context": "/redfish/v1/$metadata#Bios.Bios",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return system_bios
 
 def get_systems_id_bios_settings():
-    pass
+    settings = {
+        "@odata.type": "#Bios.v1_0_0.Bios",
+        "Id": "Settings",
+        "Name": "BIOS Configuration Pending Settings",
+        "AttributeRegistry": "BiosAttributeRegistryP89.v1_0_0",
+        "Attributes": {
+            "AdminPhone": "(404) 555-1212",
+            "BootMode": "Uefi",
+            "EmbeddedSata": "Ahci",
+            "NicBoot1": "NetworkBoot",
+            "NicBoot2": "NetworkBoot",
+            "PowerProfile": "MaxPerf",
+            "ProcCoreDisable": 0,
+            "ProcHyperthreading": "Enabled",
+            "ProcTurboMode": "Disabled",
+            "UsbControl": "UsbEnabled"
+        },
+        "@odata.context": "/redfish/v1/$metadata#Bios.Bios",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Settings",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return settings
 
 # SYSTEMS ID PROCESSORS
 
 def get_systems_id_processors():
-    pass
+    procs = {
+        "@odata.type": "#ProcssorCollection.ProcessorCollection",
+        "Name": "Processors Collection",
+        "Members@odata.count": 1,
+        "Members": [
+            {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors/CPU1"
+            }
+        ],
+        "@odata.context": "/redfish/v1/$metadata#Systems/Links/Members/" + str(SYSTEM_ID) + "/Processors/#entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return procs
 
 def get_systems_id_processors_cpu1():
-    pass
+    cpu1 = {
+        "@odata.type": "#Processor.v1_0_2.Processor",
+        "Id": "CPU1",
+        "Socket": "CPU 1",
+        "ProcessorType": "CPU",
+        "ProcessorArchitecture": "x86",
+        "InstructionSet": "x86-64",
+        "Manufacturer": "Intel(R) Corporation",
+        "Model": "Multi-Core Intel(R) Xeon(R) processor 7xxx Series",
+        "ProcessorID": {
+            "VendorID": "GenuineIntel",
+            "IdentificationRegisters": "0x34AC34DC8901274A",
+            "EffectiveFamily": "0x42",
+            "EffectiveModel": "0x61",
+            "Step": "0x1",
+            "MicrocodeInfo": "0x429943"
+        },
+        "MaxSpeedMHz": psutil.cpu_freq()[2],
+        "TotalCores": psutil.cpu_count(logical=False),
+        "TotalThreads": psutil.cpu_count(logical=True),
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK"
+        },
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/Processors/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors/CPU1",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return cpu1
 
 # SYSTEMS ID MEMORY
 
 def get_systems_id_memory():
-    pass
+    mem = {
+        "@odata.type": "#MemoryCollection.MemoryCollection",
+        "Name": "Memory Module Collection",
+        "Members@odata.count": 4,
+        "Members": [
+            {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory/DIMM"
+            },
+        ],
+        "@odata.context": "/redfish/v1/$metadata#MemoryCollection.MemoryCollection",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return mem
 
-def get_systems_id_memory_dimm1():
-    pass
-
-def get_systems_id_memory_dimm2():
-    pass
-
-def get_systems_id_memory_dimm3():
-    pass
-
-def get_systems_id_memory_dimm4():
-    pass
+def get_systems_id_memory_dimm():
+    ram = {
+        "@odata.type": "#Memory.v1_0_0.Memory",
+        "Name": "DIMM Slot 1",
+        "Id": "DIMM1",
+        "RankCount": 2,
+        "MaxTDPMilliWatts": [
+            12000
+        ],
+        "CapacityMiB": psutil.virtual_memory()[0] / (2 ** 20),
+        "DataWidthBits": 64,
+        "BusWidthBits": 72,
+        "ErrorCorrection": "MultiBitECC",
+        "MemoryLocation": {
+            "Socket": 1,
+            "MemoryController": 1,
+            "Channel": 1,
+            "Slot": 1
+        },
+        "MemoryType": "DRAM",
+        "MemoryDeviceType": "DDR4",
+        "BaseModuleType": "RDIMM",
+        "MemoryMedia": [
+            "DRAM"
+        ],
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK"
+        },
+        "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory/DIMM1",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return ram
 
 # SYSTEMS ID ETHERNET INTERFACES
 
 def get_systems_id_ethernetInterfaces():
-    pass
+    eth = {
+        "@odata.type": "#EthernetInterfaceCollection.EthernetInterfaceCollection",
+        "Name": "Ethernet Interface Collection",
+        "Description": "System NICs on Contoso Servers",
+        "Members@odata.count": 2,
+        "Members": [
+            {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_1)
+            },
+            {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_2)
+            }
+        ],
+        "Oem": {},
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return eth
 
 def get_systems_id_ethernetInterfaces_macAddress1():
-    pass
-
-def get_systems_id_ethernetInterfaces_macAddress1_VLANs():
-    pass
-
-def get_systems_id_ethernetInterfaces_macAddress1_VLANs_1():
-    pass
-
-def get_systems_id_ethernetInterfaces_macAddress1_VLANs_2():
-    pass
+    mac1 = {
+        "@odata.type": "#EthernetInterface.v1_0_2.EthernetInterface",
+        "Id": "1",
+        "Name": "Ethernet Interface",
+        "Description": "System NIC 1",
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK"
+        },
+        "FactoryMacAddress": "12:44:6A:3B:04:11",
+        "MacAddress": "12:44:6A:3B:04:11",
+        "SpeedMbps": 1000,
+        "FullDuplex": True,
+        "HostName": "web483",
+        "FQDN": "web483.contoso.com",
+        "IPv6DefaultGateway": "fe80::3ed9:2bff:fe34:600",
+        "NameServers": [
+            "names.contoso.com"
+        ],
+        "IPv4Addresses": [
+            {
+                "Address": "192.168.0.10",
+                "SubnetMask": "255.255.252.0",
+                "AddressOrigin": "Static",
+                "Gateway": "192.168.0.1"
+            }
+        ],
+        "IPv6Addresses": [
+            {
+                "Address": "fe80::1ec1:deff:fe6f:1e24",
+                "PrefixLength": 64,
+                "AddressOrigin": "Static",
+                "AddressState": "Preferred"
+            }
+        ],
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_1),
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return mac1
 
 def get_systems_id_ethernetInterfaces_macAddress2():
-    pass
-
-def get_systems_id_ethernetInterfaces_macAddress2_VLANs_1():
-    pass
-
-def get_systems_id_ethernetInterfaces_macAddress2_VLANs_2():
-    pass
+    mac2 = {
+        "@odata.type": "#EthernetInterface.v1_0_2.EthernetInterface",
+        "Id": "2",
+        "Name": "Ethernet Interface",
+        "Description": "System NIC 2",
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK"
+        },
+        "PermanentMACAddress": "12:44:6A:3B:88:90",
+        "MACAddress": "AA:BB:CC:DD:EE:00",
+        "SpeedMbps": 1000,
+        "FullDuplex": True,
+        "HostName": "backup-web483",
+        "FQDN": "backup-web483.contoso.com",
+        "IPv6DefaultGateway": "fe80::3ed9:2bff:fe34:600",
+        "NameServers": [
+            "names.contoso.com"
+        ],
+        "IPv4Addresses": [
+            {
+                "Address": "192.168.0.11",
+                "SubnetMask": "255.255.255.0",
+                "AddressOrigin": "Static",
+                "Gateway": "192.168.0.1"
+            }
+        ],
+        "IPv6Addresses": [
+            {
+                "Address": "fe80::1ec1:deff:fe6f:1e33",
+                "PrefixLength": 64,
+                "AddressOrigin": "Static",
+                "AddressState": "Preferred"
+            }
+        ],
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_2),
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return mac2
 
 # SYSTEMS ID SIMPLE STORAGE
 
 def get_systems_id_simpleStorage():
-    pass
+    storage = {
+        "@odata.type": "#SimpleStorageCollection.SimpleStorageCollection",
+        "Name": "Simple Storage Collection",
+        "Members@odata.count": 1,
+        "Members": [
+            {
+                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage/1"
+            }
+        ],
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/SimpleStorage/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return storage
 
 def get_systems_id_simpleStorage_1():
-    pass
-
-# SYSTEMS ID LOG SERVICE
-
-def get_systems_id_logServices():
-    pass
-
-def get_systems_id_logServices_id():
-    pass
-
-def get_systems_id_logServices_id_entries():
-    pass
-
-def get_systems_id_logServices_id_entries_1():
-    pass
-
-def get_systems_id_logServices_id_entries_2():
-    pass
+    storage_1 = {
+        "@odata.type": "#SimpleStorage.v1_0_2.SimpleStorage",
+        "Id": "1",
+        "Name": "Simple Storage Controller",
+        "Description": "System SATA",
+        "UEFIDevicePath": "Acpi(PNP0A03,0)/Pci(1F|1)/Ata(Primary,Master)/HD(Part3, Sig00110011)",
+        "Status": {
+            "State": "Enabled",
+            "Health": "OK",
+            "HealthRollUp": "Degraded"
+        },
+        "Devices": [
+            {
+                "Name": "SATA Bay 1",
+                "Manufacturer": "Contoso",
+                "Model": "3000GT8",
+                "CapacityBytes": 8000000000000,
+                "Status": {
+                    "State": "Enabled",
+                    "Health": "OK"
+                }
+            },
+            {
+                "Name": "SATA Bay 2",
+                "Manufacturer": "Contoso",
+                "Model": "3000GT7",
+                "CapacityBytes": 4000000000000,
+                "Status": {
+                    "State": "Enabled",
+                    "Health": "Degraded"
+                }
+            },
+            {
+                "Name": "SATA Bay 3",
+                "Status": {
+                    "State": "Absent"
+                }
+            },
+            {
+                "Name": "SATA Bay 4",
+                "Status": {
+                    "State": "Absent"
+                }
+            }
+        ],
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/SimpleStorage/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage/1",
+        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+    }
+    return storage_1
