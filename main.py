@@ -1,10 +1,11 @@
 
 from flask import Flask
+from collections import OrderedDict
+from subprocess import check_output, Popen, PIPE
 import redfish_root
 import redfish_accountservice
 import redfish_chassis
 import redfish_eventservice
-import redfish_managers
 import redfish_registries
 import redfish_sessionservice
 import redfish_systems
@@ -13,6 +14,7 @@ import psutil
 import json
 import os
 
+chassis_id = check_output(["cat", "/sys/firmware/devicetree/base/serial-number"]).decode("utf-8").replace('\u0000', '')
 
 app = Flask(__name__)
 
@@ -30,6 +32,11 @@ def get_v1():
 def get_Chassis():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis()
+
+@app.route('/redfish/v1/Chassis/' + chassis_id, methods=['GET'])
+def get_chassis_id():
+    #Implemente a lógica para obter informações do sistema usando Redfish aqui
+    return redfish_chassis.get_chassis_id()
 
 #--------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Systems', methods=['GET'])
@@ -49,6 +56,10 @@ def get_processors():
     }
     return processorsInfo
 
+@app.route('/redfish/v1/Systems/1', methods=['GET'])
+def get_Systems_id():
+    return redfish_systems.get_systems_id()
+
 @app.route('/redfish/v1/Systems/EthernetInterfaces', methods=['GET'])
 def get_EthernetInterfaces():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
@@ -58,7 +69,6 @@ def get_EthernetInterfaces():
 def get_TaskService():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_taskservice.get_taskService()
-
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/SessionService', methods=['GET'])
 def get_SessionService():
@@ -86,4 +96,4 @@ def get_CompositionService():
     return redfish_accountservice.get_accountService()
 #-------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5003, debug=True)

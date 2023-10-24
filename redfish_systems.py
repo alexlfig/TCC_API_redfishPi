@@ -1,7 +1,8 @@
-from subprocess import check_output, Popen, PIPE
 import psutil
 import json
 import os
+from subprocess import check_output, Popen, PIPE
+from collections import OrderedDict
 
 lsblk = Popen(['lsblk', '-f', '--raw'], stdout=PIPE)
 disk_info = check_output(["grep", "rootfs"], stdin=lsblk.stdout).decode("utf-8")
@@ -107,7 +108,7 @@ def get_systems_id():
             }
         },
         "MemorySummary": {
-            "TotalSystemMemoryGiB": 96,
+            "TotalSystemMemoryGiB": str(96),
             "Status": {
                 "State": "Enabled",
                 "Health": "OK",
