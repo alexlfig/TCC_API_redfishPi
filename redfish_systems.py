@@ -270,21 +270,21 @@ def get_systems_id_processors_cpu1():
         "Id": "CPU1",
         "Socket": "CPU 1",
         "ProcessorType": "CPU",
-        "ProcessorArchitecture": "x86",
+        "ProcessorArchitecture":readings.cpu_arch(),
         "InstructionSet": "x86-64",
         "Manufacturer": "Intel(R) Corporation",
-        "Model": "Multi-Core Intel(R) Xeon(R) processor 7xxx Series",
+        "Model": readings.cpu_model(),
         "ProcessorID": {
-            "VendorID": "GenuineIntel",
+            "VendorID": readings.cpu_vendor,
             "IdentificationRegisters": "0x34AC34DC8901274A",
             "EffectiveFamily": "0x42",
             "EffectiveModel": "0x61",
             "Step": "0x1",
             "MicrocodeInfo": "0x429943"
         },
-        "MaxSpeedMHz": psutil.cpu_freq()[2],
-        "TotalCores": psutil.cpu_count(logical=False),
-        "TotalThreads": psutil.cpu_count(logical=True),
+        "MaxSpeedMHz": readings.cpu_freq(),
+        "TotalCores": readings.cpu_cores(),
+        "TotalThreads": readings.cpu_threads,
         "Status": {
             "State": "Enabled",
             "Health": "OK"
@@ -322,7 +322,7 @@ def get_systems_id_memory_dimm():
         "MaxTDPMilliWatts": [
             12000
         ],
-        "CapacityMiB": psutil.virtual_memory()[0] / (2 ** 20),
+        "CapacityMiB": readings.memory_total(),
         "DataWidthBits": 64,
         "BusWidthBits": 72,
         "ErrorCorrection": "MultiBitECC",
