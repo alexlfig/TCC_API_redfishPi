@@ -1,3 +1,4 @@
+import readings
 from subprocess import check_output, Popen, PIPE
 from collections import OrderedDict
 import psutil

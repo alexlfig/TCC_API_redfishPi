@@ -1,3 +1,4 @@
+import readings
 import psutil
 import json
 import os
@@ -5,8 +6,8 @@ from subprocess import check_output, Popen, PIPE
 from collections import OrderedDict
 
 lsblk = Popen(['lsblk', '-f', '--raw'], stdout=PIPE)
-disk_info = check_output(["grep", "rootfs"], stdin=lsblk.stdout).decode("utf-8")
-UUID = disk_info.split()[4]
+disk_info = check_output(["grep", "ext4"], stdin=lsblk.stdout).decode("utf-8") #paras raspberry usar "rootfs"
+UUID = disk_info.split()[3] #para raspberry usar [3]
 
 CHASSIS_ID = 0
 SYSTEM_ID = 1
@@ -23,7 +24,7 @@ def get_systems():
         "Members@odata.count": 1,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID)
+                "@odata.id": "/redfish/v1/Systems/"+readings.boot_id()
             }
         ],
         "@odata.context": "/redfish/v1/$metadata#Systems",
@@ -37,18 +38,18 @@ def get_systems():
 def get_systems_id():
     systems_id = {
         "@odata.type": "#ComputerSystem.v1_1_0.ComputerSystem",
-        "Id": str(SYSTEM_ID),
+        "Id": readings.boot_id(),
         "Name": "WebFrontEnd483",
         "SystemType": "Physical",
         "AssetTag": "Chicago-45Z-2381",
         "Manufacturer": "Contoso",
-        "Model": "3500RX",
+        "Model": readings.model(),
         "SKU": "8675309",
-        "SerialNumber": "437XR1138R2",
+        "SerialNumber": readings.serial(),
         "PartNumber": "224071-J23",
         "Description": "Web Front End node",
-        "UUID": str(UUID),
-        "HostName": "web483",
+        "UUID": readings.system_uuid(),
+        "HostName": readings.hostname(),
         "Status": {
             "State": "Enabled",
             "Health": "OK",
@@ -116,22 +117,22 @@ def get_systems_id():
             }
         },
         "Bios": {
-            "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS"
+            "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS"
         },
         "Processors": {
-            "@odata.id": "redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors"
+            "@odata.id": "redfish/v1/Systems/" + readings.boot_id() + "/Processors"
         },
         "Memory": {
-            "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory"
+            "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory"
         },
         "EthernetInterfaces": {
-            "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces"
+            "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces"
         },
         "SimpleStorage": {
-            "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage"
+            "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage"
         },
         "LogServices": {
-            "@odata.id:" "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/LogServices"
+            "@odata.id:" "/redfish/v1/Systems/" + readings.boot_id() + "/LogServices"
         },
         "Links": {
             "Chassis": [
@@ -147,7 +148,7 @@ def get_systems_id():
         },
         "Actions": {
             "#ComputerSystem.Reset": {
-                "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Actions/ComputerSystem.Reset",
+                "target": "/redfish/v1/Systems/" + readings.boot_id() + "/Actions/ComputerSystem.Reset",
                 "ResetType@Redfish.AllowableValues": [
                     "On",
                     "ForceOff",
@@ -161,12 +162,12 @@ def get_systems_id():
             },
             "Oem": {
                 "#Contoso.Reset": {
-                    "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Oem/Contoso/Actions/Contoso.Reset"
+                    "target": "/redfish/v1/Systems/" + readings.boot_id() + "/Oem/Contoso/Actions/Contoso.Reset"
                 }
             }
         },
         "@odata.context": "/redfish/v1/$metadata#ComputerSystem.ComputerSystem",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID),
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id(),
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return systems_id
@@ -203,20 +204,20 @@ def get_systems_id_bios():
                 }
             ],
             "SettingsObject": {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Settings"
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS/Settings"
             },
             "Time": "2016-03-07T14:44.30-05:00"
         },
         "Actions": {
             "#Bios.ResetBios": {
-                "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Actions/Bios.ResetBios"
+                "target": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS/Actions/Bios.ResetBios"
             },
             "#Bios.ChangePassword": {
-                "target": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Actions/Bios.ChangePassword"
+                "target": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS/Actions/Bios.ChangePassword"
             }
         },
         "@odata.context": "/redfish/v1/$metadata#Bios.Bios",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return system_bios
@@ -240,7 +241,7 @@ def get_systems_id_bios_settings():
             "UsbControl": "UsbEnabled"
         },
         "@odata.context": "/redfish/v1/$metadata#Bios.Bios",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/BIOS/Settings",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/BIOS/Settings",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return settings
@@ -254,11 +255,11 @@ def get_systems_id_processors():
         "Members@odata.count": 1,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors/CPU1"
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Processors/CPU1"
             }
         ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Links/Members/" + str(SYSTEM_ID) + "/Processors/#entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors",
+        "@odata.context": "/redfish/v1/$metadata#Systems/Links/Members/" + readings.boot_id() + "/Processors/#entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Processors",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return procs
@@ -288,8 +289,8 @@ def get_systems_id_processors_cpu1():
             "State": "Enabled",
             "Health": "OK"
         },
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/Processors/Members/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Processors/CPU1",
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/Processors/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Processors/CPU1",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return cpu1
@@ -303,11 +304,11 @@ def get_systems_id_memory():
         "Members@odata.count": 4,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory/DIMM"
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory/DIMM"
             },
         ],
         "@odata.context": "/redfish/v1/$metadata#MemoryCollection.MemoryCollection",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return mem
@@ -342,7 +343,7 @@ def get_systems_id_memory_dimm():
             "Health": "OK"
         },
         "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/Memory/DIMM1",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory/DIMM1",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return ram
@@ -357,15 +358,15 @@ def get_systems_id_ethernetInterfaces():
         "Members@odata.count": 2,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_1)
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + str(MAC_ADDRESS_1)
             },
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_2)
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + str(MAC_ADDRESS_2)
             }
         ],
         "Oem": {},
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces",
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/EthernetInterfaces/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return eth
@@ -406,8 +407,8 @@ def get_systems_id_ethernetInterfaces_macAddress1():
                 "AddressState": "Preferred"
             }
         ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/Members/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_1),
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/EthernetInterfaces/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + str(MAC_ADDRESS_1),
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return mac1
@@ -448,8 +449,8 @@ def get_systems_id_ethernetInterfaces_macAddress2():
                 "AddressState": "Preferred"
             }
         ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/EthernetInterfaces/Members/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/EthernetInterfaces/" + str(MAC_ADDRESS_2),
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/EthernetInterfaces/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + str(MAC_ADDRESS_2),
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return mac2
@@ -463,11 +464,11 @@ def get_systems_id_simpleStorage():
         "Members@odata.count": 1,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage/1"
+                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage/1"
             }
         ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/SimpleStorage/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage",
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return storage
@@ -518,8 +519,8 @@ def get_systems_id_simpleStorage_1():
                 }
             }
         ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + str(SYSTEM_ID) + "/SimpleStorage/Members/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID) + "/SimpleStorage/1",
+        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/Members/$entity",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage/1",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return storage_1

@@ -1,11 +1,11 @@
+import readings
 import psutil
 import json
 import os
 from subprocess import check_output, Popen, PIPE
 from collections import OrderedDict
 
-serial = check_output(["cat", "/sys/firmware/devicetree/base/serial-number"]).decode("utf-8").replace('\u0000', '')
-model = check_output(["cat", "/sys/firmware/devicetree/base/model"]).decode("utf-8").replace('\u0000', '')
+
 SYSTEM_ID = 1
 MANAGER_ID = 2
 
@@ -18,7 +18,7 @@ def get_chassis():
         "Members@odata.count": 1,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial
+                "@odata.id": "/redfish/v1/Chassis/" +readings.serial()
             }
         ],
         "@odata.id": "/redfish/v1/Chassis",
@@ -31,14 +31,14 @@ def get_chassis():
 def get_chassis_id():
     chassis_id = {
         "@odata.type": "#Chassis.v1_15_0.Chassis",
-        "Id": serial,
+        "Id": readings.serial(),
         "Name": "PREENCHER",
         "ChassisType": "PREENCHER",
         "AssetTag": "PREENCHER",
         "Manufacturer": "PREENCHER",
-        "Model": model,
+        "Model":readings.model() , 
         "SKU": "PREENCHER",
-        "SerialNumber": serial,
+        "SerialNumber":readings.serial() , 
         "PartNumber": "PREENCHER",
         "PowerState": "PREENCHER",
         "IndicatorLED": "PREENCHER",
@@ -51,25 +51,25 @@ def get_chassis_id():
             "Health": "PREENCHER",
         },
         "ThermalSubsystem": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem"
         },
         "PowerSubsystem": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/PowerSubsystem"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/PowerSubsystem"
         },
         "EnvironmentMetrics": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/EnvironmentMetrics"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/EnvironmentMetrics"
         },
         "Sensors": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors"
         },
         "Links": {
             "ComputerSystems": [
                 {
-                    "@odata.id": "/redfish/v1/Systems/" + str(SYSTEM_ID)
+                    "@odata.id": "/redfish/v1/Systems/" +readings.boot_id()
                 }
             ],
         },
-        "@odata.id": "/redfish/v1/Chassis/" + serial,
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial(),
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return chassis_id
@@ -87,7 +87,7 @@ def get_thermalSubsystem():
                 "MinNeededInGroup": str(1),
                 "RedundancyGroup": [
                     {
-                        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/Bay1"
+                        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/Bay1"
                     },
                 ],
                 "Status": {
@@ -101,7 +101,7 @@ def get_thermalSubsystem():
                 "MinNeededInGroup": 1,
                 "RedundancyGroup": [
                     {
-                        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/CPU1"
+                        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/CPU1"
                     },
                 ],
                 "Status": {
@@ -110,18 +110,18 @@ def get_thermalSubsystem():
             }
         ],
         "Fans": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans"
         },
         "ThermalMetrics": {
-            "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/ThermalMetrics"
+            "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/ThermalMetrics"
         },
         "Status": {
             "State": "Enabled",
             "Health": "OK"
         },
         "Oem": {},
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem"
-        "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem"
+        #"@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return thermalsub
 
@@ -132,13 +132,13 @@ def get_fans():
         "Members@odata.count": 2,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/Bay1"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/Bay1"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/CPU1"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/CPU1"
             }
         ],
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans",
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans",
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return fans
@@ -162,7 +162,7 @@ def get_bay1():
         "SpeedPercent": {
             "Reading": str(45),
             "SpeedRPM": str(2200),
-            "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/FanBay1"
+            "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+/Sensors/FanBay1"
         },
         "Location": {
             "PartLocation": {
@@ -171,7 +171,7 @@ def get_bay1():
                 "LocationOrdinalValue": str(0)
             }
         },
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/Bay1",
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/Bay1",
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return bay1
@@ -194,7 +194,7 @@ def get_cpu1():
         "HotPluggable": str(false),
         "SpeedPercent": {
             "Reading": str(45),
-            "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/CPUFan1"
+            "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/CPUFan1"
         },
         "Location": {
             "PartLocation": {
@@ -203,7 +203,7 @@ def get_cpu1():
                 "LocationOrdinalValue": str(0)
             }
         },
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/Fans/CPU1",
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/Fans/CPU1",
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return temp_cpu1
@@ -216,35 +216,35 @@ def get_thermalMetrics():
         "TemperatureSummaryCelsius": {
             "Internal": {
                 "Reading": str(39),
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/CPU1Temp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/CPU1Temp"
             },
             "Intake": {
                 "Reading": str(24.8),
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/IntakeTemp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/IntakeTemp"
             },
             "Ambient": {
                 "Reading": str(22.5),
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/AmbientTemp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/AmbientTemp"
             },
             "Exhaust": {
                 "Reading": str(22.5),
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/ExhaustTemp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/ExhaustTemp"
             }
         },
         "TemperatureReadingsCelsius": [
             {
                 "Reading": str(22.5),
                 "DeviceName": "Intake",
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/IntakeTemp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/IntakeTemp"
             },
             {
                 "Reading": str(22.5),
                 "DeviceName": "Exhaust",
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/ExhaustTemp"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/ExhaustTemp"
             }
         ],
         "Oem": {},
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/ThermalSubsystem/ThermalMetrics",
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/ThermalSubsystem/ThermalMetrics",
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return metrics
@@ -267,10 +267,10 @@ def get_powerSubsystem():
                 "MinNeededInGroup": 1,
                 "RedundancyGroup": [
                     {
-                        "@odata.id": "/redfish/v1/Chassis/" + serial + "/PowerSubsystem/PowerSupplies/Bay1"
+                        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/PowerSubsystem/PowerSupplies/Bay1"
                     },
                     {
-                        "@odata.id": "/redfish/v1/Chassis/" + serial + "/PowerSubsystem/PowerSupplies/Bay2"
+                        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/PowerSubsystem/PowerSupplies/Bay2"
                     }
                 ],
                 "Status": {
@@ -280,15 +280,15 @@ def get_powerSubsystem():
             }
         ],
         "PowerSupplies": {
-            "odata.id": "/redfish/v1/Chassis/" + serial + "/PowerSubsystem/PowerSupplies"
+            "odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/PowerSubsystem/PowerSupplies"
         },
         "Status": {
             "State": "Enabled",
             "Health": "OK"
         },
         "Oem": {},
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/PowerSubsystem"
-        "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/PowerSubsystem"
+        #"@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return power
 
@@ -300,29 +300,29 @@ def get_environmentMetrics():
         "Name": "Chassis Environment Metrics",
         "TemperatureCelsius": {
             "Reading": 39,
-            "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/CPU1Temp"
+            "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/CPU1Temp"
         },
         "PowerWatts": {
             "Reading": 374,
-            "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/TotalPower"
+            "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/TotalPower"
         },
         "FanSpeedsPercent": [
             {
                 "DeviceName": "Chassis Fan #1",
                 "Reading": 45,
                 "SpeedRPM": 1900,
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/FanBay1"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/FanBay1"
             },
             {
                 "DeviceName": "Chassis Fan #2",
                 "Reading": 55,
                 "SpeedRPM": 2100,
-                "DataSourceUri": "/redfish/v1/Chassis/" + serial + "/Sensors/FanBay2"
+                "DataSourceUri": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/FanBay2"
             }
         ],
         "Oem": {},
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/EnvironmentMetrics"
-        "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/EnvironmentMetrics"
+        #"@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return env
 
@@ -335,31 +335,31 @@ def get_sensors():
         "Members@odata.count": 8,
         "Members": [
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/AmbientTemp"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/AmbientTemp"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/CPU1Temp"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/CPU1Temp"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/MemTemp"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/MemTemp"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/ExhaustTemp"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/ExhaustTemp"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/IntakeTemp"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/IntakeTemp"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/PS1Energy"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/PS1Energy"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/TotalEnergy"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/TotalEnergy"
             },
             {
-                "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors/TotalPower"
+                "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors/TotalPower"
             }
         ],
-        "@odata.id": "/redfish/v1/Chassis/" + serial + "/Sensors",
+        "@odata.id": "/redfish/v1/Chassis/"+readings.serial()+"/Sensors",
         "@Redfish.Copyright": "Copyright 2014-2021 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return sensors
