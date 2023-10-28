@@ -1,4 +1,3 @@
-
 import readings
 from flask import Flask
 from collections import OrderedDict
@@ -34,7 +33,7 @@ def get_Chassis():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis()
 
-@app.route('/redfish/v1/Chassis/' + 'chassis_id', methods=['GET']) #tirar as aspas
+@app.route('/redfish/v1/Chassis/' + readings.machine_id(), methods=['GET']) #tirar as aspas
 def get_chassis_id():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis_id()
@@ -44,7 +43,7 @@ def get_chassis_id():
 def get_Systems():
     return redfish_systems.get_systems()
 
-@app.route('/redfish/v1/Systems/1', methods=['GET'])  # verificar possibilidade de excluir  
+@app.route('/redfish/v1/Systems/' + readings.boot_id(), methods=['GET'])  # verificar possibilidade de excluir  
 def get_Systems_id():
     return redfish_systems.get_systems_id()
 #-----------------------------------------------------------------------------------------------------------------------

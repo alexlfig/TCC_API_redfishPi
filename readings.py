@@ -1,4 +1,4 @@
-from subprocess import check_output, Popen, PIPE
+from subprocess import check_output, Popen, call, DEVNULL, STDOUT, PIPE
 from collections import OrderedDict
 import psutil
 import json
@@ -233,5 +233,77 @@ def os_kernel_version():
             kernel = kernel + " " + word
     return kernel
 
+def eth_count():
+    """Retorna a quantidade de interfaces de rede do sistema."""
+    return str(len(psutil.net_if_addrs().keys()))
 
+def eth_names():
+    """Retorna o nome das interfaces de rede do sistema."""
+    return list(psutil.net_if_addrs().keys())
 
+def eth_members():
+    """Retorna a versão do Kernel do sistema."""
+    interface_names = psutil.net_if_addrs().keys()
+    interfaces = []
+    for name in interface_names:
+        interfaces.append({
+            "@odata.id": "/redfish/v1/Systems/" + boot_id() + "/EthernetInterfaces/" + name
+        })
+    return interfaces
+
+def eth_stats(iface: str):
+    iface_addrs = psutil.net_if_addrs()[iface]
+    iface_stats = psutil.net_if_stats()[iface]
+
+    stats = {}
+
+    stats['mac_address'] = "00:00:00:00:00:00"
+    stats['speed_mbps'] = "0"
+    stats['full_duplex'] = "False"
+    stats['state'] = "Disabled"
+    stats['ipv6_gateway'] = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+    stats['dns'] = []
+
+    nmcli1 = Popen(['nmcli', 'dev', 'show', iface], stdout=PIPE)
+    is_there_dns = call(["grep", "DNS"], stdin=nmcli1.stdout, stdout=DEVNULL, stderr=STDOUT)
+    if(is_there_dns == 0):
+        nmcli1 = Popen(['nmcli', 'dev', 'show', iface], stdout=PIPE)
+        dns_parse = check_output(["grep", "DNS"], stdin=nmcli1.stdout).decode("utf-8")
+        dns_break_lines = dns_parse.split('\n')[:-1]
+        for line in dns_break_lines:
+            stats['dns'].append(line.split()[1])
+                
+    stats['ipv4_addresses'] = []
+    stats['ipv6_addresses'] = []
+
+    for snicaddr in iface_addrs:
+        if snicaddr[0] == 2:
+            nmcli2 = Popen(['nmcli', 'dev', 'show', iface], stdout=PIPE)
+            gateway_parse = check_output(["grep", "IP4.GATEWAY"], stdin=nmcli2.stdout).decode("utf-8").replace('\n', '')
+            gateway = gateway_parse.split()[1]
+            if gateway == "--": gateway = "Unknown"
+            stats['ipv4_addresses'].append({"Address": snicaddr[1],
+                                            "SubnetMask": snicaddr[2],
+                                            "AddressOrigin": "Static",
+                                            "Gateway": gateway})                
+        elif snicaddr[0] == 10:
+            prefix = bin(int(snicaddr[2].replace(':', ''), 16))
+            prefix_length = len(str(prefix).replace('0', '').replace('b', ''))
+            stats['ipv6_addresses'].append({"Address": snicaddr[1],
+                                            "PrefixLength": prefix_length,
+                                            "AddressOrigin": "Static",
+                                            "AddressState": "Preferred"})
+        elif snicaddr[0] == 17:
+            stats['mac_address'] = snicaddr[1]
+            
+    if iface_stats[0]:
+        stats['state'] = "Enabled"
+    else:
+        stats['state'] = "Disabled"
+
+    if iface_stats[1] == 2:
+        stats['full_duplex'] = "True"
+                
+    stats['speed_mbps'] = str(iface_stats[2])
+
+    return stats

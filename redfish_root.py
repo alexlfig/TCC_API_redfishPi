@@ -5,10 +5,6 @@ import psutil
 import json
 import os
 
-lsblk = Popen(['lsblk', '-f', '--raw'], stdout=PIPE)
-disk_info = check_output(["grep", "ext4"], stdin=lsblk.stdout).decode("utf-8")
-UUID = disk_info.split()[4]
-
 def get_redfish_v1():
     redfish_v1 = OrderedDict([
         ("@odata.context", "/redfish/v1/$metadata#ServiceRoot"),
@@ -28,7 +24,6 @@ def get_redfish_v1():
         ("Systems", OrderedDict([("@odata.id", "/redfish/v1/Systems")])),
         ("CompositionService", OrderedDict([("@odata.id", "/redfish/v1/CompositionService")]))
     ])
-    redfish_v1 = json.dumps(redfish_v1, indent=4)
     
     return redfish_v1
     
