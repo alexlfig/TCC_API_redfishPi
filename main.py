@@ -39,32 +39,14 @@ def get_chassis_id():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis_id()
 
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Systems', methods=['GET'])
 def get_Systems():
     return redfish_systems.get_systems()
 
-@app.route('/redfish/v1/Systems/memory', methods=['GET'])
-def get_memory():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return 'Informações de memoria'
-
-@app.route('/redfish/v1/Systems/Processors', methods=['GET'])
-def get_processors():
-    processorsInfo = {
-        'Processors': psutil.cpu_count(),
-        'freqCpu': psutil.cpu_freq(),
-    }
-    return processorsInfo
-
-@app.route('/redfish/v1/Systems/1', methods=['GET'])
+@app.route('/redfish/v1/Systems/1', methods=['GET'])  # verificar possibilidade de excluir  
 def get_Systems_id():
     return redfish_systems.get_systems_id()
-
-@app.route('/redfish/v1/Systems/EthernetInterfaces', methods=['GET'])
-def get_EthernetInterfaces():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return 'Informações de EthernetInterfaces'
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/TaskService', methods=['GET'])
 def get_TaskService():

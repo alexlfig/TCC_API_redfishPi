@@ -32,7 +32,7 @@ def get_chassis_id():
     chassis_id = {
         "@odata.type": "#Chassis.v1_15_0.Chassis",
         "Id": readings.serial(),
-        "Name": "PREENCHER",
+        "Name": "preencher",
         "ChassisType": "PREENCHER",
         "AssetTag": "PREENCHER",
         "Manufacturer": "PREENCHER",

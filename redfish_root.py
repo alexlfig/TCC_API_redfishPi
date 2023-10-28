@@ -17,7 +17,7 @@ def get_redfish_v1():
         ("Id", "RootService"),
         ("Name", "Root Service"),
         ("RedfishVersion", "1.0.0"),
-        ("UUID", UUID), 
+        ("UUID", readings.system_uuid()), 
         ("Chassis", OrderedDict([("@odata.id", "/redfish/v1/Chassis")])),
         ("Managers", OrderedDict([("@odata.id", "/redfish/v1/Managers")])),
         ("TaskService", OrderedDict([("@odata.id", "/redfish/v1/TaskService")])),

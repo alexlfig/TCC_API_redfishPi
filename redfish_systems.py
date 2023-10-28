@@ -100,8 +100,8 @@ def get_systems_id():
         },
         "BiosVersion": "P79 v1.33 (02/28/2015)",
         "ProcessorSummary": {
-            "Count": 2,
-            "ProcessorFamily": "Multi-Core Intel(R) Xeon(R) processor 7xxx Series",
+            "Count": 2, #deleta
+            "ProcessorFamily": readings.cpu_core_model(),
             "Status": {
                 "State": "Enabled",
                 "Health": "OK",
@@ -109,7 +109,7 @@ def get_systems_id():
             }
         },
         "MemorySummary": {
-            "TotalSystemMemoryGiB": str(96),
+            "TotalSystemMemoryGiB": readings.memory_total(),
             "Status": {
                 "State": "Enabled",
                 "Health": "OK",
@@ -137,12 +137,12 @@ def get_systems_id():
         "Links": {
             "Chassis": [
                 {
-                    "@odata.id": "/redfish/v1/Chassis/" + str(CHASSIS_ID)
+                    "@odata.id": "/redfish/v1/Chassis/" + readings.machine_id()
                 }
             ],
-            "ManagedBy": [
+            "ManagedBy": [  #deletar
                 {
-                    "@odata.id": "/redfish/v1/Managers/" + str(MANAGER_ID)
+                    "@odata.id": "/redfish/v1/Managers/" + str(MANAGER_ID) 
                 }
             ]
         },
@@ -323,22 +323,22 @@ def get_systems_id_memory_dimm():
             12000
         ],
         "CapacityMiB": readings.memory_total(),
-        "DataWidthBits": 64,
-        "BusWidthBits": 72,
-        "ErrorCorrection": "MultiBitECC",
+        "DataWidthBits": 64, #deletar
+        "BusWidthBits": 72, #deletar
+        "ErrorCorrection": "MultiBitECC", #deletar
         "MemoryLocation": {
             "Socket": 1,
             "MemoryController": 1,
             "Channel": 1,
             "Slot": 1
         },
-        "MemoryType": "DRAM",
-        "MemoryDeviceType": "DDR4",
-        "BaseModuleType": "RDIMM",
-        "MemoryMedia": [
-            "DRAM"
+        "MemoryType": "DRAM", #deletar
+        "MemoryDeviceType": "DDR4", #deletar
+        "BaseModuleType": "RDIMM", #deletar
+        "MemoryMedia": [ #deletar
+            "DRAM" #deletar
         ],
-        "Status": {
+        "Status": { #função sugerida
             "State": "Enabled",
             "Health": "OK"
         },
