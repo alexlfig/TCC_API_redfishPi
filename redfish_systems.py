@@ -117,12 +117,12 @@ def get_systems_id_processors_cpu1():
         "Id": "CPU1",
         "Socket": "CPU 1",
         "ProcessorType": "CPU",
-        "ProcessorArchitecture":readings.cpu_arch(),
-        "InstructionSet": "x86-64",
+        "ProcessorArchitecture": readings.cpu_arch(),
+        "InstructionSet": readings.cpu_arch(),
         "Manufacturer": "Intel(R) Corporation",
         "Model": readings.cpu_model(),
         "ProcessorID": {
-            "VendorID": readings.cpu_vendor,
+            "VendorID": readings.cpu_vendor(),
             "IdentificationRegisters": "0x34AC34DC8901274A",
             "EffectiveFamily": "0x42",
             "EffectiveModel": "0x61",
@@ -189,7 +189,7 @@ def get_systems_id_memory_dimm():
             "Health": "OK"
         },
         "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
-        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory/DIMM1",
+        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory/DIMM",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return ram
@@ -210,44 +210,46 @@ def get_systems_id_ethernetInterfaces():
     }
     return eth
 
-systems_eth_endpoint_functions = []
-interface_counter = 1
+def dynamic_eth_funcs():
+    systems_eth_endpoint_functions = []
+    interface_counter = 1
 
-for member in readings.eth_names():
+    for member in readings.eth_names():
 
-    def bind_interface_function():
-        iface_name = deepcopy(member)
-        iface_number = str(deepcopy(interface_counter))
-        def interface_function():
-            stats = readings.eth_stats(iface_name)
+        def bind_interface_function():
+            iface_name = deepcopy(member)
+            iface_number = str(deepcopy(interface_counter))
+            def interface_function():
+                stats = readings.eth_stats(iface_name)
 
-            interface = {
-                "@odata.type": "#EthernetInterface.v1_0_2.EthernetInterface",
-                "Id": iface_name,
-                "Name": "Ethernet Interface",
-                "Description": "System NIC " + iface_number,
-                "Status": {
-                    "State": stats['state'],
-                    "Health": "OK"
-                },
-                "FactoryMacAddress": stats['mac_address'],
-                "MacAddress": stats['mac_address'],
-                "SpeedMbps": stats['speed_mbps'],
-                "FullDuplex": stats['full_duplex'],
-                "IPv6DefaultGateway": stats['ipv6_gateway'],
-                "NameServers": stats['dns'],
-                "IPv4Addresses": stats['ipv4_addresses'],
-                "IPv6Addresses": stats['ipv6_addresses'],
-                "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/EthernetInterfaces/Members/$entity",
-                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + iface_name,
-                "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
-            }
-            return interface
-        interface_function.__name__ = iface_name
-        return interface_function
+                interface = {
+                    "@odata.type": "#EthernetInterface.v1_0_2.EthernetInterface",
+                    "Id": iface_name,
+                    "Name": "Ethernet Interface",
+                    "Description": "System NIC " + iface_number,
+                    "Status": {
+                        "State": stats['state'],
+                        "Health": "OK"
+                    },
+                    "FactoryMacAddress": stats['mac_address'],
+                    "MacAddress": stats['mac_address'],
+                    "SpeedMbps": stats['speed_mbps'],
+                    "FullDuplex": stats['full_duplex'],
+                    "IPv6DefaultGateway": stats['ipv6_gateway'],
+                    "NameServers": stats['dns'],
+                    "IPv4Addresses": stats['ipv4_addresses'],
+                    "IPv6Addresses": stats['ipv6_addresses'],
+                    "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/EthernetInterfaces/Members/$entity",
+                    "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/EthernetInterfaces/" + iface_name,
+                    "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
+                }
+                return interface
+            interface_function.__name__ = iface_name
+            return interface_function
 
-    systems_eth_endpoint_functions.append(bind_interface_function())
-    interface_counter += 1
+        systems_eth_endpoint_functions.append(bind_interface_function())
+        interface_counter += 1
+    return systems_eth_endpoint_functions
 
 # SYSTEMS ID SIMPLE STORAGE
 
@@ -255,66 +257,57 @@ def get_systems_id_simpleStorage():
     storage = {
         "@odata.type": "#SimpleStorageCollection.SimpleStorageCollection",
         "Name": "Simple Storage Collection",
-        "Members@odata.count": 1,
-        "Members": [
-            {
-                "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage/1"
-            }
-        ],
+        "Members@odata.count": readings.storage_count(),
+        "Members": readings.storage_members(),
         "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/$entity",
         "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage",
         "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
     }
     return storage
 
-def get_systems_id_simpleStorage_1():
-    storage_1 = {
-        "@odata.type": "#SimpleStorage.v1_0_2.SimpleStorage",
-        "Id": "1",
-        "Name": "Simple Storage Controller",
-        "Description": "System SATA",
-        "UEFIDevicePath": "Acpi(PNP0A03,0)/Pci(1F|1)/Ata(Primary,Master)/HD(Part3, Sig00110011)",
-        "Status": {
-            "State": "Enabled",
-            "Health": "OK",
-            "HealthRollUp": "Degraded"
-        },
-        "Devices": [
-            {
-                "Name": "SATA Bay 1",
-                "Manufacturer": "Contoso",
-                "Model": "3000GT8",
-                "CapacityBytes": 8000000000000,
-                "Status": {
-                    "State": "Enabled",
-                    "Health": "OK"
+def dynamic_storage_funcs():
+    systems_storage_endpoint_functions = []
+    storage_counter = 1
+
+    for member in readings.storage_names():
+
+        def bind_storage_function():
+            str_name = deepcopy(member)
+            str_number = str(deepcopy(storage_counter))
+            def storage_function():
+                #stats = readings.storage_stats(str_name)
+
+                storage_device = {
+                    "@odata.type": "#SimpleStorage.v1_0_2.SimpleStorage",
+                    "Id": str_name,
+                    "Name": "Simple Storage Controller",
+                    "Description": "System SATA",
+                    "Status": {
+                        "State": "Enabled",
+                        "Health": "OK",
+                        "HealthRollUp": "Degraded"
+                    },
+                    "Devices": [
+                        {
+                            "Name": "SATA Bay 1",
+                            "Manufacturer": "Contoso",
+                            "Model": "3000GT8",
+                            "CapacityBytes": 8000000000000,
+                            "Status": {
+                                "State": "Enabled",
+                                "Health": "OK"
+                            }
+                        },
+                    ],
+                    "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/Members/$entity",
+                    "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage/" + str_name,
+                    "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
                 }
-            },
-            {
-                "Name": "SATA Bay 2",
-                "Manufacturer": "Contoso",
-                "Model": "3000GT7",
-                "CapacityBytes": 4000000000000,
-                "Status": {
-                    "State": "Enabled",
-                    "Health": "Degraded"
-                }
-            },
-            {
-                "Name": "SATA Bay 3",
-                "Status": {
-                    "State": "Absent"
-                }
-            },
-            {
-                "Name": "SATA Bay 4",
-                "Status": {
-                    "State": "Absent"
-                }
-            }
-        ],
-        "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/Members/$entity",
-        "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage/1",
-        "@Redfish.Copyright": "Copyright 2014-2016 DMTF. For the full DMTF copyright policy, see http://www.dmtf.org/about/policies/copyright."
-    }
-    return storage_1
+                
+                return storage_device
+            storage_function.__name__ = str_name
+            return storage_function
+
+        systems_storage_endpoint_functions.append(bind_storage_function())
+        storage_counter += 1
+    return systems_storage_endpoint_functions

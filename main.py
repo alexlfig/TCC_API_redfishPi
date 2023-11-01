@@ -1,5 +1,6 @@
 import readings
 from flask import Flask
+from flask import abort
 from collections import OrderedDict
 from subprocess import check_output, Popen, PIPE
 import redfish_root
@@ -29,7 +30,7 @@ def get_v1():
     
 #--------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Chassis', methods=['GET'])
-def get_Chassis():
+def get_chassis():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis()
 
@@ -40,12 +41,53 @@ def get_chassis_id():
 
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Systems', methods=['GET'])
-def get_Systems():
+def get_systems():
     return redfish_systems.get_systems()
 
 @app.route('/redfish/v1/Systems/' + readings.boot_id(), methods=['GET'])  # verificar possibilidade de excluir  
-def get_Systems_id():
+def get_systems_id():
     return redfish_systems.get_systems_id()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Processors', methods=['GET'])
+def get_systems_id_processors():
+    return redfish_systems.get_systems_id_processors()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Processors/CPU1', methods=['GET'])
+def get_systems_id_processors_cpu1():
+    return redfish_systems.get_systems_id_processors_cpu1()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Memory', methods=['GET'])
+def get_systems_id_memory():
+    return redfish_systems.get_systems_id_memory()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Memory/DIMM', methods=['GET'])
+def get_systems_id_memory_dimm():
+    return redfish_systems.get_systems_id_memory_dimm()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/EthernetInterfaces', methods=['GET'])
+def get_systems_id_ethernetInterfaces():
+    return redfish_systems.get_systems_id_ethernetInterfaces()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/EthernetInterfaces/<iface>', methods=['GET'])
+def get_systems_id_ethernetInterfaces_iface(iface):
+    funcs = redfish_systems.dynamic_eth_funcs()
+    for func in funcs:
+        if func.__name__ == iface:
+            return func()
+    abort(404)
+    
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/SimpleStorage', methods=['GET'])
+def get_systems_id_simpleStorage():
+    return redfish_systems.get_systems_id_simpleStorage()
+
+@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/SimpleStorage/<device>', methods=['GET'])
+def get_systems_id_simpleStorage_device(device):
+    funcs = redfish_systems.dynamic_storage_funcs()
+    for func in funcs:
+        if func.__name__ == device:
+            return func()
+    abort(404)
+
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/TaskService', methods=['GET'])
 def get_TaskService():

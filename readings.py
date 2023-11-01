@@ -307,3 +307,34 @@ def eth_stats(iface: str):
     stats['speed_mbps'] = str(iface_stats[2])
 
     return stats
+
+def storage_count():
+    lsblk = Popen(['lsblk'], stdout=PIPE)
+    disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
+    disks = disk_parse.split('\n')[:-1]
+    return len(disks)
+
+def storage_members():
+    lsblk = Popen(['lsblk'], stdout=PIPE)
+    disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
+    disks = disk_parse.split('\n')[:-1]
+    disk_members = []
+    for disk in disks:
+        disk_name = disk.split()[0]
+        disk_members.append({
+            "@odata.id": "/redfish/v1/Systems/" + boot_id() + "/SimpleStorage/" + disk_name
+        })
+    return disk_members
+
+def storage_names():
+    lsblk = Popen(['lsblk'], stdout=PIPE)
+    disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
+    disks = disk_parse.split('\n')[:-1]
+    disk_names = []
+    for disk in disks:
+        disk_name = disk.split()[0]
+        disk_names.append(disk_name)
+    return disk_names
+
+def storage_stats():
+    pass
