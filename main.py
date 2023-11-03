@@ -7,7 +7,6 @@ import redfish_root
 import redfish_accountservice
 import redfish_chassis
 import redfish_eventservice
-import redfish_registries
 import redfish_sessionservice
 import redfish_systems
 import redfish_taskservice
@@ -27,7 +26,6 @@ def index():
 @app.route('/redfish/v1/', methods=['GET'])
 def get_v1():  
     return redfish_root.get_redfish_v1()
-    
 #--------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Chassis', methods=['GET'])
 def get_chassis():
@@ -39,6 +37,21 @@ def get_chassis_id():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_chassis.get_chassis_id()
 
+@app.route('/redfish/v1/Chassis/' + readings.machine_id() + '/ThermalSubsystem', methods=['GET'])
+def get_chassis_id_thermalSubsystem():
+    return redfish_chassis.get_thermalSubsystem()
+
+@app.route('/redfish/v1/Chassis/' + readings.machine_id() + '/ThermalSubsystem/ThermalMetrics', methods=['GET'])
+def get_chassis_id_thermalMetrics():
+    return redfish_chassis.get_thermalMetrics()
+
+@app.route('/redfish/v1/Chassis/' + readings.machine_id() + '/PowerSubsystem', methods=['GET'])
+def get_chassis_id_powerSubsystem():
+    return redfish_chassis.get_powerSubsystem()
+
+@app.route('/redfish/v1/Chassis/' + readings.machine_id() + '/Sensors', methods=['GET'])
+def get_chassis_id_sensors():
+    return redfish_chassis.get_sensors()
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/Systems', methods=['GET'])
 def get_systems():
@@ -87,17 +100,24 @@ def get_systems_id_simpleStorage_device(device):
         if func.__name__ == device:
             return func()
     abort(404)
-
-#-----------------------------------------------------------------------------------------------------------------------
-@app.route('/redfish/v1/TaskService', methods=['GET'])
-def get_TaskService():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return redfish_taskservice.get_taskService()
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/SessionService', methods=['GET'])
 def get_SessionService():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_sessionservice.get_sessionService()
+
+@app.route('/redfish/v1/SessionService/<username>', methods=['GET'])
+def get_SessionService_User(username):
+    funcs = redfish_sessionservice.dynamic_session_funcs()
+    for func in funcs:
+        if func.__name__ == username:
+            return func()
+    abort(404)
+#-----------------------------------------------------------------------------------------------------------------------
+@app.route('/redfish/v1/TaskService', methods=['GET'])
+def get_TaskService():
+    #Implemente a lógica para obter informações do sistema usando Redfish aqui
+    return redfish_taskservice.get_taskService()
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/AccountService', methods=['GET'])
 def get_AccountService():
@@ -108,16 +128,6 @@ def get_AccountService():
 def get_EventService():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_eventservice.get_eventService()
-#------------------------------------------------------------------------------------------------------------------------
-@app.route('/redfish/v1/Registries', methods=['GET'])
-def get_Registries():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return redfish_registries.get_registries()
-#------------------------------------------------------------------------------------------------------------------------
-@app.route('/redfish/v1/CompositionService', methods=['GET'])
-def get_CompositionService():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return redfish_accountservice.get_accountService()
 #-------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5003, debug=True)

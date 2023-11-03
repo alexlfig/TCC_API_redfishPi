@@ -1,5 +1,6 @@
 from subprocess import check_output, Popen, call, DEVNULL, STDOUT, PIPE
 from collections import OrderedDict
+from datetime import datetime
 import psutil
 import json
 import os
@@ -61,6 +62,31 @@ def manufacturer():
         return "Embest"
     else:
         return "Unknown"
+
+def power_health():
+    """Retorna a saúde do sistema de alimentação baseado na tensão
+    dos cores e da memória RAM."""
+    core = check_output(['vcgencmd', 'measure_volts', 'core']).decode("utf-8").replace('\n', '')
+    sdram_i = check_output(['vcgencmd', 'measure_volts', 'sdram_i']).decode("utf-8").replace('\n', '')
+    sdram_c = check_output(['vcgencmd', 'measure_volts', 'sdram_c']).decode("utf-8").replace('\n', '')
+    sdram_p = check_output(['vcgencmd', 'measure_volts', 'sdram_p']).decode("utf-8").replace('\n', '')
+    volt_core = float(core.split('=')[1].replace('V', ''))
+    volt_i = float(sdram_i.split('=')[1].replace('V', ''))
+    volt_c = float(sdram_c.split('=')[1].replace('V', ''))
+    volt_p = float(sdram_p.split('=')[1].replace('V', ''))
+    if volt_core >= 1.2 and volt_core <= 1.28 and volt_i >= 1.2 and volt_i <= 1.28 and volt_c >= 1.2 and volt_c <= 1.28 and volt_p >= 1.2 and volt_p <= 1.28:
+        return "OK"
+    else:
+        return "WARNING"
+
+def temp_health():
+    """Retorna o status da temperatura; caso maior que 95, alerta."""
+    vcgencmd = check_output(['vcgencmd', 'measure_temp']).decode("utf-8").replace('\n', '')
+    temp = float(vcgencmd.split('=')[1].replace("'C", ""))
+    if temp <= 95:
+        return "OK"
+    else:
+        return "WARNING"
 
 def cpu_model():
     """Retorna o modelo do processador."""
@@ -151,6 +177,15 @@ def cpu_voltage():
     volt = vcgencmd.split('=')[1]
     return volt
 
+def cpu_health():
+    """Retorna a saúde do processador baseado na tensão dos cores."""
+    vcgencmd = check_output(['vcgencmd', 'measure_volts', 'core']).decode("utf-8").replace('\n', '')
+    volt = float(vcgencmd.split('=')[1].replace('V', ''))
+    if volt >= 1.2 and volt <= 1.28:
+        return "OK"
+    else:
+        return "WARNING"
+
 def cpu_temp():
     """Retorna a temperatura do processador."""
     vcgencmd = check_output(['vcgencmd', 'measure_temp']).decode("utf-8").replace('\n', '')
@@ -205,6 +240,18 @@ def memory_voltage():
     volt = vcgencmd.split('=')[1]
     return volt
 
+def memory_voltage_c():
+    """Retorna a tensão de alimentação lida pela memória SDRAM."""
+    vcgencmd = check_output(['vcgencmd', 'measure_volts', 'sdram_c']).decode("utf-8").replace('\n', '')
+    volt = vcgencmd.split('=')[1]
+    return volt
+
+def memory_voltage_p():
+    """Retorna a tensão de alimentação lida pela memória SDRAM."""
+    vcgencmd = check_output(['vcgencmd', 'measure_volts', 'sdram_p']).decode("utf-8").replace('\n', '')
+    volt = vcgencmd.split('=')[1]
+    return volt
+
 def memory_buffers():
     """Retorna a quantidade de memória de buffers."""
     return str(int(psutil.virtual_memory()[7]/(2 ** 20))) + "M"
@@ -212,6 +259,19 @@ def memory_buffers():
 def memory_cached():
     """Retorna a quantidade de memória em cache."""
     return str(int(psutil.virtual_memory()[8]/(2 ** 20))) + "M"
+
+def memory_health():
+    """Retorna a saúde da memória baseado nas tensões de alimentação."""
+    sdram_i = check_output(['vcgencmd', 'measure_volts', 'sdram_i']).decode("utf-8").replace('\n', '')
+    sdram_c = check_output(['vcgencmd', 'measure_volts', 'sdram_c']).decode("utf-8").replace('\n', '')
+    sdram_p = check_output(['vcgencmd', 'measure_volts', 'sdram_p']).decode("utf-8").replace('\n', '')
+    volt_i = float(sdram_i.split('=')[1].replace('V', ''))
+    volt_c = float(sdram_c.split('=')[1].replace('V', ''))
+    volt_p = float(sdram_p.split('=')[1].replace('V', ''))
+    if volt_i >= 1.2 and volt_i <= 1.28 and volt_c >= 1.2 and volt_c <= 1.28 and volt_p >= 1.2 and volt_p <= 1.28:
+        return "OK"
+    else:
+        return "WARNING"
 
 def swap_total():
     """Retorna a memória de swap total."""
@@ -405,3 +465,22 @@ def storage_stats(device):
                 stats['capacitybytes'] = capacitybytes
 
     return stats
+
+def session_count():
+    """Retorna a quantidade de sessões ativas."""
+    return len(psutil.users())
+
+def session_members():
+    """Retorna endpoints relativos a cada sessão ativa."""
+    members = []
+    for session in psutil.users():
+        members.append({
+            "@odata.id": "/redfish/v1/SessionService/" + session[0]
+        })
+    return members
+
+def session_login_time(user):
+    for session in psutil.users():
+        if session[0] == user:
+            return datetime.fromtimestamp(session[3]).isoformat()
+    return "Unknown"

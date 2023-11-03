@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # SYSTEMS ROOT
 
-def get_systems(): # PRONTO
+def get_systems():
     systems = {
         "@odata.type": "#ComputerSystemCollection.ComputerSystemCollection",
         "Name": "Computer System Collection",
@@ -26,7 +26,7 @@ def get_systems(): # PRONTO
 
 # SYSTEMS ID
 
-def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
+def get_systems_id():
     systems_id = {
         "@odata.type": "#ComputerSystem.v1_1_0.ComputerSystem",
         "Id": readings.boot_id(),
@@ -39,9 +39,7 @@ def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
         "UUID": readings.system_uuid(),
         "HostName": readings.hostname(),
         "Status": {
-            "State": "Enabled",
-            "Health": "OK",
-            "HealthRollUp": "OK"
+            "Health": readings.cpu_health(),
         },
         "IndicatorLED": readings.power_led(),
         "PowerState": "On",
@@ -49,17 +47,13 @@ def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
             "Count": readings.cpu_cores(),
             "ProcessorFamily": readings.cpu_model(),
             "Status": {
-                "State": "Enabled",
-                "Health": "OK",
-                "HealthRollUp": "OK"
+                "Health": readings.cpu_health(),
             }
         },
         "MemorySummary": {
             "TotalSystemMemoryMiB": readings.memory_total(),
             "Status": {
-                "State": "Enabled",
-                "Health": "OK",
-                "HealthRollUp": "OK"
+                "Health": readings.memory_health(),
             }
         },
         "Processors": {
@@ -73,9 +67,6 @@ def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
         },
         "SimpleStorage": {
             "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/SimpleStorage"
-        },
-        "LogServices": {
-            "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/LogServices"
         },
         "Links": {
             "Chassis": [
@@ -92,7 +83,7 @@ def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
 
 # SYSTEMS ID PROCESSORS
 
-def get_systems_id_processors(): # PRONTO
+def get_systems_id_processors():
     procs = {
         "@odata.type": "#ProcssorCollection.ProcessorCollection",
         "Name": "Processors Collection",
@@ -108,7 +99,7 @@ def get_systems_id_processors(): # PRONTO
     }
     return procs
 
-def get_systems_id_processors_cpu1(): # FALTA STATUS E HEALTH DO PROC
+def get_systems_id_processors_cpu1():
     cpu1 = {
         "@odata.type": "#Processor.v1_0_2.Processor",
         "Id": "CPU1",
@@ -125,8 +116,7 @@ def get_systems_id_processors_cpu1(): # FALTA STATUS E HEALTH DO PROC
         "TotalCores": readings.cpu_cores(),
         "TotalThreads": readings.cpu_threads(),
         "Status": {
-            "State": "Enabled",
-            "Health": "OK"
+            "Health": readings.cpu_health(),
         },
         "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/Processors/Members/$entity",
         "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Processors/CPU1",
@@ -136,7 +126,7 @@ def get_systems_id_processors_cpu1(): # FALTA STATUS E HEALTH DO PROC
 
 # SYSTEMS ID MEMORY
 
-def get_systems_id_memory(): # PRONTO
+def get_systems_id_memory():
     mem = {
         "@odata.type": "#MemoryCollection.MemoryCollection",
         "Name": "Memory Module Collection",
@@ -152,7 +142,7 @@ def get_systems_id_memory(): # PRONTO
     }
     return mem
 
-def get_systems_id_memory_dimm(): # FALTA STATUS E HEALTH DA MEMORIA
+def get_systems_id_memory_dimm():
     ram = {
         "@odata.type": "#Memory.v1_0_0.Memory",
         "Name": "DIMM Slot 1",
@@ -167,17 +157,16 @@ def get_systems_id_memory_dimm(): # FALTA STATUS E HEALTH DA MEMORIA
             "Available": readings.memory_available(),
             "Free": readings.memory_free(),
             "Buffers": readings.memory_buffers(),
-            "Cached": readings.memory_cached()
+            "Cached": readings.memory_cached(),
         },
         "Swap": {
             "TotalMiB": readings.swap_total(),
             "Memory Used": readings.swap_used(),
             "Percent Used": readings.swap_percent(),
             "Free": readings.swap_free()
-        }
+        },
         "Status": {
-            "State": "Enabled",
-            "Health": "OK"
+            "Health": readings.memory_health(),
         },
         "@odata.context": "/redfish/v1/$metadata#Memory.Memory",
         "@odata.id": "/redfish/v1/Systems/" + readings.boot_id() + "/Memory/DIMM",
@@ -187,7 +176,7 @@ def get_systems_id_memory_dimm(): # FALTA STATUS E HEALTH DA MEMORIA
 
 # SYSTEMS ID ETHERNET INTERFACES
 
-def get_systems_id_ethernetInterfaces(): # PRONTO
+def get_systems_id_ethernetInterfaces():
     eth = {
         "@odata.type": "#EthernetInterfaceCollection.EthernetInterfaceCollection",
         "Name": "Ethernet Interface Collection",
@@ -201,7 +190,7 @@ def get_systems_id_ethernetInterfaces(): # PRONTO
     }
     return eth
 
-def dynamic_eth_funcs(): # PRONTO
+def dynamic_eth_funcs():
     systems_eth_endpoint_functions = []
     interface_counter = 1
 
@@ -243,7 +232,7 @@ def dynamic_eth_funcs(): # PRONTO
 
 # SYSTEMS ID SIMPLE STORAGE
 
-def get_systems_id_simpleStorage(): # PRONTO
+def get_systems_id_simpleStorage():
     storage = {
         "@odata.type": "#SimpleStorageCollection.SimpleStorageCollection",
         "Name": "Simple Storage Collection",
@@ -255,7 +244,7 @@ def get_systems_id_simpleStorage(): # PRONTO
     }
     return storage
 
-def dynamic_storage_funcs(): # FALTA STATUS E HEALTH
+def dynamic_storage_funcs():
     systems_storage_endpoint_functions = []
     storage_counter = 1
 
@@ -272,21 +261,12 @@ def dynamic_storage_funcs(): # FALTA STATUS E HEALTH
                     "Id": str_name,
                     "Name": stats['name'],
                     "Description": stats['description'],
-                    "Status": {
-                        "State": "Enabled",
-                        "Health": "OK",
-                        "HealthRollUp": "Degraded"
-                    },
                     "Devices": [
                         {
                             "Name": stats['device_name'],
                             "Manufacturer": stats['manufacturer'],
                             "Model": stats['model'],
                             "CapacityBytes": stats['capacitybytes'],
-                            "Status": {
-                                "State": "Enabled",
-                                "Health": "OK"
-                            }
                         },
                     ],
                     "@odata.context": "/redfish/v1/$metadata#Systems/Members/" + readings.boot_id() + "/SimpleStorage/Members/$entity",
