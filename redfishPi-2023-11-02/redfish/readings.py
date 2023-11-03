@@ -40,6 +40,28 @@ def system_uuid():
     uuid = disk_info.split()[4]
     return uuid
 
+def power_led():
+    """Retorna o status do LED de Power do Raspberry Pi."""
+    led_brightness = int(check_output(["cat", "/sys/class/leds/PWR/brightness"]).decode("utf-8"))
+    if(led_brightness > 0):
+        return "On"
+    else:
+        return "Off"
+
+def manufacturer():
+    """Retorna o fabricante da placa Raspberry Pi."""
+    cpu_info = Popen(['cat', '/proc/cpuinfo'], stdout=PIPE)
+    revision = check_output(["grep", "Revision"], stdin=cpu_info.stdout).decode("utf-8")
+    revision = int(revision.split()[2][1])
+    if revision == 0:
+        return "Sony"
+    elif revision == 1:
+        return "Egoman"
+    elif revision == 2 or revision == 4:
+        return "Embest"
+    else:
+        return "Unknown"
+
 def cpu_model():
     """Retorna o modelo do processador."""
     cpu_info = Popen(['cat', '/proc/cpuinfo'], stdout=PIPE)
@@ -130,6 +152,7 @@ def cpu_voltage():
     return volt
 
 def cpu_temp():
+    """Retorna a temperatura do processador."""
     vcgencmd = check_output(['vcgencmd', 'measure_temp']).decode("utf-8").replace('\n', '')
     temp = vcgencmd.split('=')[1]
     return temp
@@ -252,6 +275,8 @@ def eth_members():
     return interfaces
 
 def eth_stats(iface: str):
+    """Retorna estatísitcas de uma determinada interface de rede, cujo nome
+    lógico é passado como parâmetro."""
     iface_addrs = psutil.net_if_addrs()[iface]
     iface_stats = psutil.net_if_stats()[iface]
 
@@ -309,12 +334,14 @@ def eth_stats(iface: str):
     return stats
 
 def storage_count():
+    """Retorna a quantidade de dispositivos de armazenamento conectados."""
     lsblk = Popen(['lsblk'], stdout=PIPE)
     disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
     disks = disk_parse.split('\n')[:-1]
     return len(disks)
 
 def storage_members():
+    """Retorna as URLs dos endpoints da API para dispositivos de armazenamento conectados."""
     lsblk = Popen(['lsblk'], stdout=PIPE)
     disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
     disks = disk_parse.split('\n')[:-1]
@@ -327,6 +354,7 @@ def storage_members():
     return disk_members
 
 def storage_names():
+    """Retorna os nomes lógicos dos dispositivos de armazenamento conectados."""
     lsblk = Popen(['lsblk'], stdout=PIPE)
     disk_parse = check_output(["grep", "disk"], stdin=lsblk.stdout).decode("utf-8")
     disks = disk_parse.split('\n')[:-1]
@@ -336,5 +364,44 @@ def storage_names():
         disk_names.append(disk_name)
     return disk_names
 
-def storage_stats():
-    pass
+def storage_stats(device):
+    """Retorna estatísitcas de um determinado dispositivo de armazenamento, cujo nome
+    lógico é passado como parâmetro."""
+    lshw = json.loads(check_output(["sudo", "lshw",
+                                   "-class", "disk",
+                                   "-json"]).decode("utf-8"))
+    
+    stats = {}
+
+    stats['name'] = "Unknown"
+    stats['description'] = "Unknown"
+    stats['device_name'] = "Unknown"
+    stats['manufacturer'] = "Unknown"
+    stats['model'] = "Unknown"
+    stats['capacitybytes'] = "Unknown"
+                                
+    for entry in lshw:
+
+        if entry['logicalname'] == "/dev/" + device:
+
+            name = str(entry.get('logicalname'))
+            description = str(entry.get('description'))
+            device_name = str(entry.get('logicalname'))
+            manufacturer = str(entry.get('vendor'))
+            model = str(entry.get('product'))
+            capacitybytes = str(entry.get('size'))
+
+            if stats['name'] == "Unknown" and name is not None:
+                stats['name'] = name
+            if stats['description'] == "Unknown" and description is not None:
+                stats['description'] = description
+            if stats['device_name'] == "Unknown" and device_name is not None:
+                stats['device_name'] = device_name
+            if stats['manufacturer'] == "Unknown" and manufacturer is not None:
+                stats['manufacturer'] = manufacturer
+            if stats['model'] == "Unknown" and model is not None:
+                stats['model'] = model
+            if stats['capacitybytes'] == "Unknown" and capacitybytes is not None:
+                stats['capacitybytes'] = capacitybytes
+
+    return stats

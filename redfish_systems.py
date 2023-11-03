@@ -8,7 +8,7 @@ from copy import deepcopy
 
 # SYSTEMS ROOT
 
-def get_systems():
+def get_systems(): # PRONTO
     systems = {
         "@odata.type": "#ComputerSystemCollection.ComputerSystemCollection",
         "Name": "Computer System Collection",
@@ -26,19 +26,16 @@ def get_systems():
 
 # SYSTEMS ID
 
-def get_systems_id():
+def get_systems_id(): # FALTA STATUS E HEALTH DO SYSTEM, DO PROC E DA MEMORIA
     systems_id = {
         "@odata.type": "#ComputerSystem.v1_1_0.ComputerSystem",
         "Id": readings.boot_id(),
-        "Name": "WebFrontEnd483",
+        "Name": readings.model(),
         "SystemType": "Physical",
-        "AssetTag": "Chicago-45Z-2381",
-        "Manufacturer": "Contoso",
+        "Manufacturer": readings.manufacturer(),
         "Model": readings.model(),
-        "SKU": "8675309",
         "SerialNumber": readings.serial(),
-        "PartNumber": "224071-J23",
-        "Description": "Web Front End node",
+        "Description": readings.model(),
         "UUID": readings.system_uuid(),
         "HostName": readings.hostname(),
         "Status": {
@@ -46,10 +43,10 @@ def get_systems_id():
             "Health": "OK",
             "HealthRollUp": "OK"
         },
-        "IndicatorLED": "Off",
+        "IndicatorLED": readings.power_led(),
         "PowerState": "On",
         "ProcessorSummary": {
-            "Count": "2",
+            "Count": readings.cpu_cores(),
             "ProcessorFamily": readings.cpu_model(),
             "Status": {
                 "State": "Enabled",
@@ -95,7 +92,7 @@ def get_systems_id():
 
 # SYSTEMS ID PROCESSORS
 
-def get_systems_id_processors():
+def get_systems_id_processors(): # PRONTO
     procs = {
         "@odata.type": "#ProcssorCollection.ProcessorCollection",
         "Name": "Processors Collection",
@@ -111,7 +108,7 @@ def get_systems_id_processors():
     }
     return procs
 
-def get_systems_id_processors_cpu1():
+def get_systems_id_processors_cpu1(): # FALTA STATUS E HEALTH DO PROC
     cpu1 = {
         "@odata.type": "#Processor.v1_0_2.Processor",
         "Id": "CPU1",
@@ -119,15 +116,10 @@ def get_systems_id_processors_cpu1():
         "ProcessorType": "CPU",
         "ProcessorArchitecture": readings.cpu_arch(),
         "InstructionSet": readings.cpu_arch(),
-        "Manufacturer": "Intel(R) Corporation",
+        "Manufacturer": readings.cpu_vendor(),
         "Model": readings.cpu_model(),
         "ProcessorID": {
             "VendorID": readings.cpu_vendor(),
-            "IdentificationRegisters": "0x34AC34DC8901274A",
-            "EffectiveFamily": "0x42",
-            "EffectiveModel": "0x61",
-            "Step": "0x1",
-            "MicrocodeInfo": "0x429943"
         },
         "MaxSpeedMHz": readings.cpu_freq(),
         "TotalCores": readings.cpu_cores(),
@@ -144,7 +136,7 @@ def get_systems_id_processors_cpu1():
 
 # SYSTEMS ID MEMORY
 
-def get_systems_id_memory():
+def get_systems_id_memory(): # PRONTO
     mem = {
         "@odata.type": "#MemoryCollection.MemoryCollection",
         "Name": "Memory Module Collection",
@@ -160,30 +152,29 @@ def get_systems_id_memory():
     }
     return mem
 
-def get_systems_id_memory_dimm():
+def get_systems_id_memory_dimm(): # FALTA STATUS E HEALTH DA MEMORIA
     ram = {
         "@odata.type": "#Memory.v1_0_0.Memory",
         "Name": "DIMM Slot 1",
         "Id": "DIMM1",
-        "RankCount": 2,
-        "MaxTDPMilliWatts": [
-            12000
-        ],
-        "CapacityMiB": readings.memory_total(),
-        "DataWidthBits": 64,
-        "BusWidthBits": 72,
-        "MemoryLocation": {
-            "Socket": 1,
-            "MemoryController": 1,
-            "Channel": 1,
-            "Slot": 1
+        "Memory": {
+            "TotalMiB": readings.memory_total(),
+            "SystemMiB": readings.memory_arm(),
+            "GPUMiB": readings.memory_gpu(),
+            "Clock": readings.memory_freq(),
+            "Memory Used": readings.memory_used(),
+            "Percent Used": readings.memory_percent_used(),
+            "Available": readings.memory_available(),
+            "Free": readings.memory_free(),
+            "Buffers": readings.memory_buffers(),
+            "Cached": readings.memory_cached()
         },
-        "MemoryType": "DRAM",
-        "MemoryDeviceType": "DDR4",
-        "BaseModuleType": "RDIMM",
-        "MemoryMedia": [
-            "DRAM"
-        ],
+        "Swap": {
+            "TotalMiB": readings.swap_total(),
+            "Memory Used": readings.swap_used(),
+            "Percent Used": readings.swap_percent(),
+            "Free": readings.swap_free()
+        }
         "Status": {
             "State": "Enabled",
             "Health": "OK"
@@ -196,7 +187,7 @@ def get_systems_id_memory_dimm():
 
 # SYSTEMS ID ETHERNET INTERFACES
 
-def get_systems_id_ethernetInterfaces():
+def get_systems_id_ethernetInterfaces(): # PRONTO
     eth = {
         "@odata.type": "#EthernetInterfaceCollection.EthernetInterfaceCollection",
         "Name": "Ethernet Interface Collection",
@@ -210,7 +201,7 @@ def get_systems_id_ethernetInterfaces():
     }
     return eth
 
-def dynamic_eth_funcs():
+def dynamic_eth_funcs(): # PRONTO
     systems_eth_endpoint_functions = []
     interface_counter = 1
 
@@ -229,7 +220,6 @@ def dynamic_eth_funcs():
                     "Description": "System NIC " + iface_number,
                     "Status": {
                         "State": stats['state'],
-                        "Health": "OK"
                     },
                     "FactoryMacAddress": stats['mac_address'],
                     "MacAddress": stats['mac_address'],
@@ -253,7 +243,7 @@ def dynamic_eth_funcs():
 
 # SYSTEMS ID SIMPLE STORAGE
 
-def get_systems_id_simpleStorage():
+def get_systems_id_simpleStorage(): # PRONTO
     storage = {
         "@odata.type": "#SimpleStorageCollection.SimpleStorageCollection",
         "Name": "Simple Storage Collection",
@@ -265,7 +255,7 @@ def get_systems_id_simpleStorage():
     }
     return storage
 
-def dynamic_storage_funcs():
+def dynamic_storage_funcs(): # FALTA STATUS E HEALTH
     systems_storage_endpoint_functions = []
     storage_counter = 1
 
@@ -275,13 +265,13 @@ def dynamic_storage_funcs():
             str_name = deepcopy(member)
             str_number = str(deepcopy(storage_counter))
             def storage_function():
-                #stats = readings.storage_stats(str_name)
+                stats = readings.storage_stats(str_name)
 
                 storage_device = {
                     "@odata.type": "#SimpleStorage.v1_0_2.SimpleStorage",
                     "Id": str_name,
-                    "Name": "Simple Storage Controller",
-                    "Description": "System SATA",
+                    "Name": stats['name'],
+                    "Description": stats['description'],
                     "Status": {
                         "State": "Enabled",
                         "Health": "OK",
@@ -289,10 +279,10 @@ def dynamic_storage_funcs():
                     },
                     "Devices": [
                         {
-                            "Name": "SATA Bay 1",
-                            "Manufacturer": "Contoso",
-                            "Model": "3000GT8",
-                            "CapacityBytes": 8000000000000,
+                            "Name": stats['device_name'],
+                            "Manufacturer": stats['manufacturer'],
+                            "Model": stats['model'],
+                            "CapacityBytes": stats['capacitybytes'],
                             "Status": {
                                 "State": "Enabled",
                                 "Health": "OK"
