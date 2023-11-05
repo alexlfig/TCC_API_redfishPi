@@ -118,6 +118,15 @@ def get_SessionService_User(username):
 def get_TaskService():
     #Implemente a lógica para obter informações do sistema usando Redfish aqui
     return redfish_taskservice.get_taskService()
+
+@app.route('/redfish/v1/TaskService/<task>', methods=['GET'])
+def get_TaskService_id(task):
+    #Implemente a lógica para obter informações do sistema usando Redfish aqui
+    funcs = redfish_taskservice.dynamic_task_funcs()
+    for func in funcs:
+        if func.__name__ == task:
+            return func()
+    abort(404)
 #-----------------------------------------------------------------------------------------------------------------------
 @app.route('/redfish/v1/AccountService', methods=['GET'])
 def get_AccountService():

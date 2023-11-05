@@ -484,3 +484,68 @@ def session_login_time(user):
         if session[0] == user:
             return datetime.fromtimestamp(session[3]).isoformat()
     return "Unknown"
+
+def process_counter():
+    process_parse = check_output(["ps", "-eo", "pid,lstart,cmd"]).decode("utf-8")
+    process = process_parse.split('\n')[1:-2]
+    return len(process)
+
+def process_pids():
+    processes_parse = check_output(["ps", "-eo", "pid"]).decode("utf-8")
+    processes = processes_parse.split('\n')[1:-2]
+    pids = []
+    for process in processes:
+        pids.append(process.split()[0])
+    return pids
+
+def process_members():
+    processes_parse = check_output(["ps", "-eo", "pid,lstart,cmd"]).decode("utf-8")
+    processes = processes_parse.split('\n')[1:-2]
+    members = []
+    for process in processes:
+        members.append({"@odata.id": "/redfish/v1/TaskService/" + process.split()[0]})
+    return members
+
+def process_stats(pid):
+    processes_parse = check_output(["ps", "-eo", "pid,lstart,s,cmd"]).decode("utf-8")
+    processes = processes_parse.split('\n')[1:-2]
+    for process in processes:
+        proc_split = process.split()
+        if(proc_split[0] == pid):
+            date_info = proc_split[2] + " " + proc_split[3] + " " + proc_split[4] + " " + proc_split[5]
+            date_fmt = "%b %d %H:%M:%S %Y"
+            date_iso = datetime.strptime(date_info, date_fmt).isoformat()
+            name_splits = proc_split[7:]
+            name = ""
+            for i in name_splits:
+                name = name + i + " "
+            name = name[:-1]
+            stat = proc_split[6]
+            status_text = "Unknown"
+
+            if stat == 'D':
+                status_text = "Uninterruptible sleep"
+            elif stat == 'I':
+                status_text = "Idle kernel thread"
+            elif stat == 'R':
+                status_text = "Running"
+            elif stat == 'S':
+                status_text = "Waiting"
+            elif stat == 'T':
+                status_text = "Stopped by job control signal"
+            elif stat == 't':
+                status_text = "Stopped by debugger"
+            elif stat == 'W':
+                status_text = "Paging"
+            elif stat == 'X':
+                status_text = "Dead"
+            elif stat == 'Z':
+                status_text = "Defunct process"
+
+            proc_dict = {}
+            proc_dict['pid'] = proc_split[0]
+            proc_dict['start_time'] = date_iso
+            proc_dict['name'] = name
+            proc_dict['status'] = status_text
+            return proc_dict
+    return {'pid': '', 'start_time': '', 'name': '', 'status': ''}
