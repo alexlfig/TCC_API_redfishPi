@@ -30,6 +30,16 @@ def hostname():
     name = hostname.split()[2]
     return name
 
+def board_name():
+    """Retorna o nome do Raspberry."""
+    base_model = check_output(["cat", "/sys/firmware/devicetree/base/model"]).decode("utf-8").replace('\u0000', '')
+    name = base_model.split()[:3]
+    full_name = ""
+    for i in name:
+        full_name = full_name + i + " "
+    full_name = full_name[:-1]
+    return full_name
+
 def model():
     """Retorna o modelo do Raspberry."""
     return check_output(["cat", "/sys/firmware/devicetree/base/model"]).decode("utf-8").replace('\u0000', '')
@@ -74,7 +84,7 @@ def power_health():
     volt_i = float(sdram_i.split('=')[1].replace('V', ''))
     volt_c = float(sdram_c.split('=')[1].replace('V', ''))
     volt_p = float(sdram_p.split('=')[1].replace('V', ''))
-    if volt_core >= 1.2 and volt_core <= 1.28 and volt_i >= 1.2 and volt_i <= 1.28 and volt_c >= 1.2 and volt_c <= 1.28 and volt_p >= 1.2 and volt_p <= 1.28:
+    if volt_core >= 1.2 and volt_core <= 1.3 and volt_i >= 1.2 and volt_i <= 1.3 and volt_c >= 1.2 and volt_c <= 1.3 and volt_p >= 1.2 and volt_p <= 1.3:
         return "OK"
     else:
         return "WARNING"
@@ -181,7 +191,7 @@ def cpu_health():
     """Retorna a saúde do processador baseado na tensão dos cores."""
     vcgencmd = check_output(['vcgencmd', 'measure_volts', 'core']).decode("utf-8").replace('\n', '')
     volt = float(vcgencmd.split('=')[1].replace('V', ''))
-    if volt >= 1.2 and volt <= 1.28:
+    if volt >= 1.2 and volt <= 1.3:
         return "OK"
     else:
         return "WARNING"
@@ -268,7 +278,7 @@ def memory_health():
     volt_i = float(sdram_i.split('=')[1].replace('V', ''))
     volt_c = float(sdram_c.split('=')[1].replace('V', ''))
     volt_p = float(sdram_p.split('=')[1].replace('V', ''))
-    if volt_i >= 1.2 and volt_i <= 1.28 and volt_c >= 1.2 and volt_c <= 1.28 and volt_p >= 1.2 and volt_p <= 1.28:
+    if volt_i >= 1.2 and volt_i <= 1.3 and volt_c >= 1.2 and volt_c <= 1.3 and volt_p >= 1.2 and volt_p <= 1.3:
         return "OK"
     else:
         return "WARNING"
@@ -330,7 +340,7 @@ def eth_members():
     interfaces = []
     for name in interface_names:
         interfaces.append({
-            "@odata.id": "/redfish/v1/Systems/" + boot_id() + "/EthernetInterfaces/" + name
+            "@odata.id": "/redfish/v1/Systems/" + machine_id() + "/EthernetInterfaces/" + name
         })
     return interfaces
 
@@ -409,7 +419,7 @@ def storage_members():
     for disk in disks:
         disk_name = disk.split()[0]
         disk_members.append({
-            "@odata.id": "/redfish/v1/Systems/" + boot_id() + "/SimpleStorage/" + disk_name
+            "@odata.id": "/redfish/v1/Systems/" + machine_id() + "/SimpleStorage/" + disk_name
         })
     return disk_members
 
@@ -480,17 +490,20 @@ def session_members():
     return members
 
 def session_login_time(user):
+    """Retorna data e hora de login do usuário especificado."""
     for session in psutil.users():
         if session[0] == user:
             return datetime.fromtimestamp(session[3]).isoformat()
     return "Unknown"
 
 def process_counter():
+    """Retorna a quantidade de processos alocados."""
     process_parse = check_output(["ps", "-eo", "pid,lstart,cmd"]).decode("utf-8")
     process = process_parse.split('\n')[1:-2]
     return len(process)
 
 def process_pids():
+    """Retorna a lista de PIDs dos processos alocados."""
     processes_parse = check_output(["ps", "-eo", "pid"]).decode("utf-8")
     processes = processes_parse.split('\n')[1:-2]
     pids = []
@@ -499,14 +512,18 @@ def process_pids():
     return pids
 
 def process_members():
+    """Retorna as URLs dos endpoints referentes a cada processo."""
     processes_parse = check_output(["ps", "-eo", "pid,lstart,cmd"]).decode("utf-8")
     processes = processes_parse.split('\n')[1:-2]
     members = []
     for process in processes:
-        members.append({"@odata.id": "/redfish/v1/TaskService/" + process.split()[0]})
+        name = process.split()[6]
+        members.append({"@odata.id": "/redfish/v1/TaskService/" + process.split()[0],
+                        "Process Name": name})
     return members
 
 def process_stats(pid):
+    """Retorna status de monitoramento de um processo especificado."""
     processes_parse = check_output(["ps", "-eo", "pid,lstart,s,cmd"]).decode("utf-8")
     processes = processes_parse.split('\n')[1:-2]
     for process in processes:

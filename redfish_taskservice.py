@@ -1,10 +1,5 @@
 import readings
-import psutil
-import json
-import os
-from subprocess import check_output, Popen, PIPE
-from collections import OrderedDict
-from copy import deepcopy
+from copy import deepcopy #Usado para persistência dos dados na função geradora de funções
 
 def get_taskService():
     task_service = {

@@ -1,13 +1,7 @@
 import readings
 import psutil
-import json
-import os
 from datetime import datetime
-from subprocess import check_output, Popen, PIPE
-from collections import OrderedDict
-from copy import deepcopy
-
-LOGIN_ID = 5
+from copy import deepcopy #Usado para persistência dos dados na função geradora de funções
 
 def get_sessionService():
     session_service = {

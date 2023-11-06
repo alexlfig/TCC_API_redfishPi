@@ -1,20 +1,11 @@
-import readings
 from flask import Flask
 from flask import abort
-from collections import OrderedDict
-from subprocess import check_output, Popen, PIPE
+import readings
 import redfish_root
-import redfish_accountservice
 import redfish_chassis
-import redfish_eventservice
 import redfish_sessionservice
 import redfish_systems
 import redfish_taskservice
-import psutil
-import json
-import os
-
-#chassis_id = check_output(["cat", "/sys/firmware/devicetree/base/serial-number"]).decode("utf-8").replace('\u0000', '')
 
 app = Flask(__name__)
 
@@ -57,31 +48,31 @@ def get_chassis_id_sensors():
 def get_systems():
     return redfish_systems.get_systems()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id(), methods=['GET'])  # verificar possibilidade de excluir  
+@app.route('/redfish/v1/Systems/' + readings.machine_id(), methods=['GET'])  # verificar possibilidade de excluir  
 def get_systems_id():
     return redfish_systems.get_systems_id()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Processors', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/Processors', methods=['GET'])
 def get_systems_id_processors():
     return redfish_systems.get_systems_id_processors()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Processors/CPU1', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/Processors/CPU1', methods=['GET'])
 def get_systems_id_processors_cpu1():
     return redfish_systems.get_systems_id_processors_cpu1()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Memory', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/Memory', methods=['GET'])
 def get_systems_id_memory():
     return redfish_systems.get_systems_id_memory()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/Memory/DIMM', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/Memory/DIMM', methods=['GET'])
 def get_systems_id_memory_dimm():
     return redfish_systems.get_systems_id_memory_dimm()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/EthernetInterfaces', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/EthernetInterfaces', methods=['GET'])
 def get_systems_id_ethernetInterfaces():
     return redfish_systems.get_systems_id_ethernetInterfaces()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/EthernetInterfaces/<iface>', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/EthernetInterfaces/<iface>', methods=['GET'])
 def get_systems_id_ethernetInterfaces_iface(iface):
     funcs = redfish_systems.dynamic_eth_funcs()
     for func in funcs:
@@ -89,11 +80,11 @@ def get_systems_id_ethernetInterfaces_iface(iface):
             return func()
     abort(404)
     
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/SimpleStorage', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/SimpleStorage', methods=['GET'])
 def get_systems_id_simpleStorage():
     return redfish_systems.get_systems_id_simpleStorage()
 
-@app.route('/redfish/v1/Systems/' + readings.boot_id() + '/SimpleStorage/<device>', methods=['GET'])
+@app.route('/redfish/v1/Systems/' + readings.machine_id() + '/SimpleStorage/<device>', methods=['GET'])
 def get_systems_id_simpleStorage_device(device):
     funcs = redfish_systems.dynamic_storage_funcs()
     for func in funcs:
@@ -127,16 +118,6 @@ def get_TaskService_id(task):
         if func.__name__ == task:
             return func()
     abort(404)
-#-----------------------------------------------------------------------------------------------------------------------
-@app.route('/redfish/v1/AccountService', methods=['GET'])
-def get_AccountService():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return redfish_accountservice.get_accountService()
-#------------------------------------------------------------------------------------------------------------------------
-@app.route('/redfish/v1/EventService', methods=['GET'])
-def get_EventService():
-    #Implemente a lógica para obter informações do sistema usando Redfish aqui
-    return redfish_eventservice.get_eventService()
 #-------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5003, debug=True)

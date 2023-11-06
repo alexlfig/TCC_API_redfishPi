@@ -1,9 +1,4 @@
 import readings
-import psutil
-import json
-import os
-from subprocess import check_output, Popen, PIPE
-from collections import OrderedDict
 
 # CHASSIS ROOT 
 
@@ -28,7 +23,7 @@ def get_chassis_id():
     chassis_id = {
         "@odata.type": "#Chassis.v1_15_0.Chassis",
         "Id": readings.machine_id(),
-        "Name": readings.model(),
+        "Name": readings.board_name(),
         "Manufacturer": readings.manufacturer(),
         "Model":readings.model() , 
         "SerialNumber":readings.serial() , 
@@ -46,7 +41,7 @@ def get_chassis_id():
         "Links": {
             "ComputerSystems": [
                 {
-                    "@odata.id": "/redfish/v1/Systems/" +readings.boot_id()
+                    "@odata.id": "/redfish/v1/Systems/" +readings.machine_id()
                 }
             ],
         },
@@ -80,7 +75,7 @@ def get_thermalMetrics():
         "Name": "Chassis Thermal Metrics",
         "TemperatureReadingsCelsius": [
             {
-                "Reading": readings.cpu_voltage(),
+                "Reading": readings.cpu_temp(),
                 "DeviceName": "CPU",
                 "DataSourceUri": "/redfish/v1/Chassis/"+readings.machine_id()+"/Sensors"
             },
